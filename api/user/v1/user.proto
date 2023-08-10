@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package api.user.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "k8s-kratos/api/user/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.user.v1";
+
+service User {
+  rpc CreateUser (CreateUserRequest) returns (CreateUserReply){
+    option (google.api.http) = {
+      get: "/v1/user/create",
+      additional_bindings {
+        post: "/v1/user/create",
+        body: "*",
+      }
+    };
+  };
+  rpc UpdateUser (UpdateUserRequest) returns (UpdateUserReply){
+    option (google.api.http) = {
+      get: "/v1/user/update",
+      additional_bindings {
+        post: "/v1/user/update",
+        body: "*",
+      }
+    };
+  };
+  rpc DeleteUser (DeleteUserRequest) returns (DeleteUserReply){
+    option (google.api.http) = {
+      get: "/v1/user/delete",
+      additional_bindings {
+        post: "/v1/user/delete",
+        body: "*",
+      }
+    };
+  };
+  rpc GetUser (GetUserRequest) returns (GetUserReply){
+    option (google.api.http) = {
+      get: "/v1/user/get",
+      additional_bindings {
+        post: "/v1/user/get",
+        body: "*",
+      }
+    };
+  };
+  rpc ListUser (ListUserRequest) returns (ListUserReply){
+    option (google.api.http) = {
+      get: "/v1/user/list",
+      additional_bindings {
+        post: "/v1/user/list",
+        body: "*",
+      }
+    };
+  };
+}
+
+message CreateUserRequest {
+  string id = 1;
+  string name = 2;
+}
+message CreateUserReply {
+  string msg = 1;
+  int32 code = 2;
+}
+
+message UpdateUserRequest {
+  string id = 1;
+  string name = 2;
+}
+message UpdateUserReply {
+  int32 code = 1;
+  string msg = 2;
+
+}
+
+message DeleteUserRequest {
+  string id = 1;
+  string name = 2;
+}
+message DeleteUserReply {
+  int32 code = 1;
+  string msg = 2;
+
+}
+
+message GetUserRequest {
+  string id = 1;
+  string name = 2;
+}
+message GetUserReply {
+  int32 code = 1;
+  string msg = 2;
+
+}
+
+message ListUserRequest {
+  int32 code = 1;
+  string msg = 2;
+
+}
+message ListUserReply {
+  int32 code = 1;
+  string msg = 2;
+}

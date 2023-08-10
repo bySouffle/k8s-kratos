@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package api.info.v1;
+import "google/api/annotations.proto";
+
+option go_package = "k8s-kratos/api/info/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.info.v1";
+
+service Info {
+  rpc CreateInfo (CreateInfoRequest) returns (CreateInfoReply){
+    option (google.api.http) = {
+      // 定义一个 GET 接口，并且把 name 映射到 HelloRequest
+      get: "/v1/info/create/{param.msg}",
+      // 可以添加附加接口
+      additional_bindings {
+        // 定义一个 POST 接口，并且把 body 映射到 HelloRequest
+        post: "/v1/info/create",
+        body: "*",
+      }
+    };
+  };
+  rpc UpdateInfo (UpdateInfoRequest) returns (UpdateInfoReply){
+    option (google.api.http) = {
+      // 定义一个 GET 接口，并且把 name 映射到 HelloRequest
+      get: "/v1/info/update/{param.msg}",
+      // 可以添加附加接口
+      additional_bindings {
+        // 定义一个 POST 接口，并且把 body 映射到 HelloRequest
+        post: "/v1/info/update",
+        body: "*",
+      }
+    };
+  };
+  rpc DeleteInfo (DeleteInfoRequest) returns (DeleteInfoReply){
+    option (google.api.http) = {
+      // 定义一个 GET 接口，并且把 name 映射到 HelloRequest
+      get: "/v1/info/delete/{param.msg}",
+      // 可以添加附加接口
+      additional_bindings {
+        // 定义一个 POST 接口，并且把 body 映射到 HelloRequest
+        post: "/v1/info/delete",
+        body: "*",
+      }
+    };
+  };
+  rpc GetInfo (GetInfoRequest) returns (GetInfoReply){
+    option (google.api.http) = {
+      // 定义一个 GET 接口，并且把 name 映射到 HelloRequest
+      get: "/v1/info/get/{param.msg}",
+      // 可以添加附加接口
+      additional_bindings {
+        // 定义一个 POST 接口，并且把 body 映射到 HelloRequest
+        post: "/v1/info/get",
+        body: "*",
+      }
+    };
+  };
+  rpc ListInfo (ListInfoRequest) returns (ListInfoReply){
+    option (google.api.http) = {
+      // 定义一个 GET 接口，并且把 name 映射到 HelloRequest
+      get: "/v1/info/list/{param.msg}",
+      // 可以添加附加接口
+      additional_bindings {
+        // 定义一个 POST 接口，并且把 body 映射到 HelloRequest
+        post: "/v1/info/list",
+        body: "*",
+      }
+    };
+  };
+}
+
+message req{
+  int32 id = 1;
+  string msg = 2;
+}
+
+message resp{
+  int32 code = 1;
+  string msg = 2;
+}
+
+message CreateInfoRequest {
+  req param = 1;
+}
+message CreateInfoReply {
+  resp data = 1;
+}
+
+message UpdateInfoRequest {
+  req param = 1;
+}
+message UpdateInfoReply {
+  resp data = 1;
+}
+
+message DeleteInfoRequest {
+  req param = 1;
+}
+message DeleteInfoReply {
+  resp data = 1;
+}
+
+message GetInfoRequest {
+  req param = 1;
+}
+message GetInfoReply {
+  resp data = 1;
+}
+
+message ListInfoRequest {
+  req param = 1;
+}
+message ListInfoReply {
+  resp data = 1;
+}

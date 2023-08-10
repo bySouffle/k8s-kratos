@@ -1,0 +1,220 @@
+# nonk8s
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: go-test-ns  # 替换为你想要的Namespace名称
+  labels:
+    istio-injection: enabled
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: docker-reg
+  namespace: go-test-ns
+type: kubernetes.io/dockerconfigjson
+data:
+  # user:admin passwd:admin123
+  .dockerconfigjson: eyJhdXRocyI6eyJteXJlZ2lzdHJ5Lms4cy1tYXN0ZXIuY29tOjUwMDAiOnsidXNlcm5hbWUiOiJhZG1pbiIsInBhc3N3b3JkIjoiYWRtaW4xMjMiLCJhdXRoIjoiWVdSdGFXNDZZV1J0YVc0eE1qTT0ifX19
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-test-user
+  namespace: go-test-ns
+#  labels:
+#    istio-injection: enabled
+spec:
+  replicas: 1  # 设置副本数量
+  selector:
+    matchLabels:
+      app: go-test-user
+  template:
+    metadata:
+      labels:
+        app: go-test-user
+    #        sidecar.istio.io/inject: "false"
+    spec:
+      imagePullSecrets:
+        - name: docker-reg
+      containers:
+        - name: go-test-user
+          image: myregistry.k8s-master.com:5000/srv:v1.0  # 替换为你自己的镜像
+          ports:
+            - containerPort: 8000
+            - containerPort: 9000
+          command: [ "bash", "-c" ]
+          args:
+            - "./user -conf /data/conf"
+          volumeMounts:
+            - name: data-volume
+              mountPath: /data/conf
+
+      volumes:
+        - name: data-volume
+          hostPath:
+            path: /opt/k8s-kratos/app/user/configs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-test-info
+  namespace: go-test-ns
+#  labels:
+#    istio-injection: enabled
+spec:
+  replicas: 2  # 设置副本数量
+  selector:
+    matchLabels:
+      app: go-test-info
+  template:
+    metadata:
+      labels:
+        app: go-test-info
+    #        sidecar.istio.io/inject: "false"
+    spec:
+      imagePullSecrets:
+        - name: docker-reg
+      containers:
+        - name: go-test-info
+          image: myregistry.k8s-master.com:5000/srv:v1.0  # 替换为你自己的镜像
+          ports:
+            - containerPort: 8000
+            - containerPort: 9000
+          command: [ "bash", "-c" ]
+          args:
+            - "./info -conf /data/conf"
+          volumeMounts:
+            - name: data-volume
+              mountPath: /data/conf
+
+      volumes:
+        - name: data-volume
+          hostPath:
+            path: /opt/k8s-kratos/app/info/configs
+---
+#apiVersion: v1
+#kind: Pod
+#metadata:
+#  name: go-test-po
+#  namespace: go-test-ns
+#  labels:
+#    app: go-test-app
+#spec:
+#  imagePullSecrets:
+#    - name: docker-reg
+#  containers:
+#    - name: go-test-user
+#      image: myregistry.k8s-master.com:5000/user1:latest  # 替换为你自己的镜像
+#      ports:
+#        - containerPort: 8000
+#        - containerPort: 9000
+#      command: ["bash", "-c"]
+#      args:
+#        - "./user -conf /data/conf"
+#      volumeMounts:
+#        - name: data-volume
+#          mountPath: /data/conf
+#
+#  volumes:
+#    - name: data-volume
+#      hostPath:
+#        path: /home/siasun/env/docker/dockfile/k8s-kratos/app/user/configs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-test-srv-user
+  namespace: go-test-ns
+spec:
+  selector:
+    app: go-test-user
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8000
+    - name: grpc
+      protocol: TCP
+      port: 90
+      targetPort: 9000
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-test-srv-info
+  namespace: go-test-ns
+spec:
+  selector:
+    app: go-test-info
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8000
+    - name: grpc
+      protocol: TCP
+      port: 90
+      targetPort: 9000
+  type: ClusterIP
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: app-gateway
+  namespace: go-test-ns
+spec:
+  selector:
+    istio: ingressgateway # use Istio default gateway implementation
+  servers:
+    - port:
+        protocol: HTTP
+        number: 8000
+        name: http-go-user
+      hosts:
+        - "*"
+    - port:
+        protocol: HTTP
+        number: 9000
+        name: grpc-go-user
+      hosts:
+        - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: go-vs
+  namespace: go-test-ns
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - app-gateway
+  http:
+    - match:
+        - port: 8000
+          uri:
+            prefix: "/v1/info"
+      route:
+        - destination:
+            host: go-test-srv-info
+            port:
+              number: 80
+    - match:
+        - port: 8000
+          uri:
+            prefix: "/v1/user"
+      route:
+        - destination:
+            host: go-test-srv-user
+            port:
+              number: 80
+    - match:
+        - port: 9000
+      route:
+        - destination:
+            host: go-test-srv-user
+            port:
+              number: 90
+
