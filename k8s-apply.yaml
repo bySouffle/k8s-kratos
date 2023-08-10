@@ -38,7 +38,7 @@ spec:
         - name: docker-reg
       containers:
         - name: go-test-user
-          image: myregistry.k8s-master.com:5000/srv:v1.0  # 替换为你自己的镜像
+          image: myregistry.k8s-master.com:5000/srv:v2.0  # 替换为你自己的镜像
           ports:
             - containerPort: 8000
             - containerPort: 9000
@@ -76,7 +76,7 @@ spec:
         - name: docker-reg
       containers:
         - name: go-test-info
-          image: myregistry.k8s-master.com:5000/srv:v1.0  # 替换为你自己的镜像
+          image: myregistry.k8s-master.com:5000/srv:v2.0  # 替换为你自己的镜像
           ports:
             - containerPort: 8000
             - containerPort: 9000
@@ -217,4 +217,26 @@ spec:
             host: go-test-srv-user
             port:
               number: 90
-
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: data-entry
+  namespace: go-test-ns
+spec:
+  hosts:
+    - 'myregistry.k8s-master.com'
+  exportTo:
+    - "."
+  ports:
+    - number: 6379
+      name: redis
+      protocol: TCP
+    - number: 3306
+      name: mysql
+      protocol: TCP
+#  location: MESH_EXTERNAL #flag，表示该服务是网格外的服务
+#  resolution: DNS         #主机服务的发现模型
+  addresses:
+  - 192.168.0.106/32
+---

@@ -12,6 +12,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"os"
+	"time"
 
 	_ "go.uber.org/automaxprocs"
 )
@@ -81,10 +82,10 @@ func main() {
 	}
 	defer cleanup()
 
-	//go func() {
-	//	time.Sleep(time.Minute)
-	//	app.Stop()
-	//}()
+	go func() {
+		time.Sleep(time.Minute)
+		app.Stop()
+	}()
 	//start and wait for stop signal
 	if err := app.Run(); err != nil {
 		panic(err)
